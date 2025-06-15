@@ -58,6 +58,12 @@ fn getToken(): TokenKind
     } else if (ch == '*') {
         nextCh(true);
         return token.kind = ASTERISK;
+    } else if (ch == '(') {
+        nextCh(true);
+        return token.kind = LPAREN;
+    } else if (ch == ')') {
+        nextCh(true);
+        return token.kind = RPAREN;
     } else if (ch == EOF) {
         return token.kind = EOI;
     } else {
@@ -87,6 +93,12 @@ fn tokenKindStr(token: TokenKind): -> char
             break;
         case IDENTIFIER:
             str = "IDENTIFIER";
+            break;
+        case LPAREN:
+            str = "LPAREN";
+            break;
+        case RPAREN:
+            str = "RPAREN";
             break;
         default:
             str = "??";
