@@ -2,3 +2,6 @@ tree*
 session*
 *.out
 *.o
+dep/
+obj/
+simple/
