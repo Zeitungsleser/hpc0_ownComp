@@ -3,6 +3,7 @@
 // -- internal: only available within this translation unit
 global ch: int;
 global currentPos: Pos = {1,0};
+global lengthVal: size_t;
 
 fn isDigit(ch: int): bool
 {
@@ -16,8 +17,6 @@ fn isLetter(ch: int): bool
 
 fn nextCh(updateVal: bool)
 {
-    static lengthVal: size_t;
-
     if (updateVal) {
         assert(lengthVal < sizeof(token.val) / sizeof(token.val[0]) - 1);
         token.val[lengthVal++] = ch;
@@ -38,6 +37,7 @@ fn nextCh(updateVal: bool)
 global token: Token;
 fn getToken(): TokenKind
 {
+    lengthVal = 0;
     while (ch == 0 || ch == ' ' || ch == '\n' || ch == '\t') {
         nextCh(false);
     }
