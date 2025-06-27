@@ -5,7 +5,7 @@
 fn main()
 {
     getToken();
-    local expr: -> Expr = parseExpr();
+    local expr: -> Expr = parseStatement();
     if (expr && token.kind == EOI) {
         genHalt(loadExpr(expr));
     } else {

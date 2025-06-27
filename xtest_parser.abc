@@ -5,10 +5,14 @@
 fn main()
 {
     getToken();
-    local expr: -> Expr = parseExpr();
-    if (expr && token.kind == EOI) {
-        printExprTree(expr);
-    } else {
+    while(true) {
+        local expr: -> Expr = parseStatement();
+        if (!expr) {
+            break;
+        }
+        printExprLatexTree(expr);
+    }
+    if (token.kind != EOI) {
         printf("syntax error\n");
     }
 }

@@ -12,6 +12,8 @@ enum TokenKind
     IDENTIFIER,
     LPAREN,
     RPAREN,
+    SEMICOLON,
+    EQUAL,
 };
 
 struct Token

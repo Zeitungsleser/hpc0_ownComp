@@ -2,11 +2,54 @@
 @ "parser.hdr"
 @ "lexer.hdr"
 
+fn parseStatement(): -> Expr;
+fn parseExpr(): -> Expr;
+fn parseAdditive(): -> Expr;
 fn parseTerm(): -> Expr;
 fn parseFactor(): -> Expr;
 fn getExprKindFromToken(: Token): ExprKind;
 
+fn parseProg(): 
+
+fn parseStatement(): -> Expr
+{
+    local expr: -> Expr = parseExpr();
+    if (!expr) {
+        return nullptr;
+    }
+    if (token.kind == SEMICOLON){
+        getToken();
+        return expr;
+    }else{
+        getToken();
+        printf("%u.%u ';' expected \n", 
+                token.pos.row, token.pos.col);
+        assert(0);
+        return nullptr;
+    }
+}
+
 fn parseExpr(): -> Expr
+{
+    local left: -> Expr = parseAdditive();
+    if (!left) {
+        return nullptr;
+    }
+    while (token.kind == EQUAL) {
+        local symbol: ExprKind = getExprKindFromToken(token);
+        getToken();
+        local right: -> Expr = parseExpr();
+        if (!right) {
+            printf("%u.%u expected additive\n",
+                   token.pos.row, token.pos.col);
+            assert(0);
+        }
+        left = createBinaryExpr(symbol, left, right);
+    }
+    return left;
+}
+
+fn parseAdditive(): -> Expr
 {
     local left: -> Expr = parseTerm();
     if (!left) {
@@ -67,6 +110,10 @@ fn parseFactor(): -> Expr
         }
         getToken();
         return expr;
+    } else if (token.kind == IDENTIFIER) {
+        local expr: -> Expr = createIdentifierExpr(token.val);
+        getToken();
+        return expr;
     } else {
         return nullptr;
     }
@@ -79,6 +126,7 @@ fn getExprKindFromToken(tok: Token): ExprKind
         case SLASH: return EXPR_DIV;
         case PLUS: return EXPR_ADD;
         case MINUS: return EXPR_SUB;
+        case EQUAL: return EXPR_ASSIGN;
         default:
             assert(0 && "internal error: exprKindFromToken\n");
             return 0;

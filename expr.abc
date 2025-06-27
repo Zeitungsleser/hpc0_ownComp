@@ -25,6 +25,15 @@ fn createIntegerExpr(val: string): ->Expr
     return n;
 }
 
+fn createIdentifierExpr(name: string): ->Expr
+{
+    local n: -> Expr = malloc(sizeof(*n));
+    assert(n);
+    n->kind = EXPR_IDENTIFIER;
+    n->identifier = name;
+    return n;
+}
+
 fn releaseExpr(expr: ->Expr)
 {
     if (expr->kind == EXPR_INTEGER) {
@@ -39,7 +48,11 @@ fn releaseExpr(expr: ->Expr)
 fn printExprTree(expr: -> Expr)
 {
     if (expr->kind > EXPR_PRIMARY && expr->kind < EXPR_PRIMARY_END) {
-        printf(" [ %s ]", expr->decimal);
+        switch (expr->kind) {
+            case EXPR_INTEGER: printf(" [ %s ]", expr->decimal); break;
+            case EXPR_IDENTIFIER: printf(" [ %s ]", expr->identifier); break;
+            default: assert(0);
+        }
     }else if (expr->kind > EXPR_BINARY && expr->kind < EXPR_BINARY_END) {
         printf(" [ ");
         switch (expr->kind) {
@@ -47,12 +60,20 @@ fn printExprTree(expr: -> Expr)
             case EXPR_DIV: printf("/"); break;
             case EXPR_MUL: printf("*"); break;
             case EXPR_SUB: printf("-"); break;
+            case EXPR_ASSIGN: printf("{=}"); break;
             default: assert(0);
         }
         printExprTree(expr->left);
         printExprTree(expr->right);
         printf(" ] ");
     }
+}
+
+fn printExprLatexTree(expr: -> Expr)
+{
+    printf("\\item\n\\[\n\\begin{forest}\nfor tree={draw,circle,calign=fixed edge angles}\n");
+    printExprTree(expr);
+    printf("\n\\end{forest}\n\\]\n");
 }
 
 fn loadExpr(expr: -> Expr): GenReg
