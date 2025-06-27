@@ -4,6 +4,7 @@
 
 fn parseTerm(): -> Expr;
 fn parseFactor(): -> Expr;
+fn getExprKindFromToken(: Token): ExprKind;
 
 fn parseExpr(): -> Expr
 {
@@ -12,7 +13,7 @@ fn parseExpr(): -> Expr
         return nullptr;
     }
     while (token.kind == PLUS || token.kind == MINUS) {
-        local symbol: ExprKind = (token.kind == PLUS) ? EXPR_ADD : EXPR_SUB;
+        local symbol: ExprKind = getExprKindFromToken(token);
         getToken();
         local right: -> Expr = parseTerm();
         if (!right) {
@@ -32,7 +33,7 @@ fn parseTerm(): -> Expr
         return nullptr;
     }
     while (token.kind == ASTERISK || token.kind == SLASH) {
-        local symbol: ExprKind = (token.kind == ASTERISK) ? EXPR_MUL : EXPR_DIV;
+        local symbol: ExprKind = getExprKindFromToken(token);
         getToken();
         local right: -> Expr = parseFactor();
         if (!right) {
@@ -68,5 +69,18 @@ fn parseFactor(): -> Expr
         return expr;
     } else {
         return nullptr;
+    }
+}
+
+fn getExprKindFromToken(tok: Token): ExprKind
+{
+    switch(tok.kind){
+        case ASTERISK: return EXPR_MUL;
+        case SLASH: return EXPR_DIV;
+        case PLUS: return EXPR_ADD;
+        case MINUS: return EXPR_SUB;
+        default:
+            assert(0 && "internal error: exprKindFromToken\n");
+            return 0;
     }
 }

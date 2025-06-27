@@ -12,6 +12,7 @@ fn main()
                             createIntegerExpr((string)"4"));
     printExprTree(expr);
     printf("\n");
+    loadExpr(expr);
 
     releaseExpr(expr);
 }

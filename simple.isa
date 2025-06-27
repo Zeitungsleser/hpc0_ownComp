@@ -11,11 +11,21 @@ R_R_R       (OP u 8) (z u 4) (y u 4) (x u 4)
     ulm_setReg(imm, dest);
 
 0x13 R_R_R
-#   Adds register \\texttt{%x} to register and stores the result in
+#   Adds register \\texttt{%x} to register \\texttt{%y} and stores the result in
 #   register \\texttt{%z}.
 :   add %x, %y, %z
     ulm_add64(ulm_regVal(x), ulm_regVal(y), z);
+    
+0x14 R_R_R
+#   Substracts register \texttt{%y} from register \\texttt{%x} and stores the result in
+#   register \texttt{%z}.
+:   sub %x, %y, %z
+    ulm_sub64(ulm_regVal(x), ulm_regVal(y), z);
 
 0x17 R_R_R
 :   mul %x, %y, %z
     ulm_mul64(ulm_regVal(x), ulm_regVal(y), z);
+
+0x18 R_R_R
+:   div %x, %y, %z
+    ulm_idiv64(ulm_regVal(x), ulm_regVal(y), z);

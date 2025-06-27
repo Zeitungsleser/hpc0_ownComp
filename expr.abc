@@ -2,6 +2,9 @@
 @ <stdlib.hdr>
 @ "expr.hdr"
 @ "string.hdr"
+@ "gen.hdr"
+
+fn exprKindToGenInstr(kind: ExprKind): GenInstr;
 
 fn createBinaryExpr(kind: ExprKind, left: ->Expr, right: ->Expr): ->Expr
 {
@@ -49,5 +52,34 @@ fn printExprTree(expr: -> Expr)
         printExprTree(expr->left);
         printExprTree(expr->right);
         printf(" ] ");
+    }
+}
+
+fn loadExpr(expr: -> Expr): GenReg
+{
+    if (expr->kind > EXPR_PRIMARY && expr->kind < EXPR_PRIMARY_END) {
+        return genConstant(expr->decimal);
+    }else if (expr->kind > EXPR_BINARY && expr->kind < EXPR_BINARY_END) {
+        local left: GenReg = loadExpr(expr->left);
+        local right: GenReg = loadExpr(expr->right);
+        genReleaseReg(left);
+        genReleaseReg(right);
+        return genInstr(exprKindToGenInstr(expr->kind), left, right);
+    }
+    assert(0 && "loadExpr: not all cases handled!");
+    return genConstant("0");
+    
+}
+
+fn exprKindToGenInstr(kind: ExprKind): GenInstr
+{
+    switch(kind){
+        case EXPR_ADD: return GEN_ADD;
+        case EXPR_SUB: return GEN_SUB;
+        case EXPR_MUL: return GEN_MUL;
+        case EXPR_DIV: return GEN_DIV;
+        default:
+            assert (0 && "exprKindToGenInstr: no binary Expression");
+            return 0;
     }
 }
