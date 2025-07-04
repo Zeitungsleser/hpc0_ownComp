@@ -9,7 +9,20 @@ fn parseTerm(): -> Expr;
 fn parseFactor(): -> Expr;
 fn getExprKindFromToken(: Token): ExprKind;
 
-fn parseProg(): 
+fn parseProg(): array[10] of -> Expr
+{
+    local exprs: array[10] of -> Expr;
+    local i : int = 0;
+    while(i<10){
+        local expr: -> Expr = parseStatement();
+        if(!expr) {
+            break;
+        }
+        exprs[i] = expr;
+        i++;
+    }
+    return exprs;
+}
 
 fn parseStatement(): -> Expr
 {

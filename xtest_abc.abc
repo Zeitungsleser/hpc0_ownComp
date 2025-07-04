@@ -5,10 +5,21 @@
 fn main()
 {
     getToken();
-    local expr: -> Expr = parseStatement();
-    if (expr && token.kind == EOI) {
-        genHalt(loadExpr(expr));
-    } else {
+    while(true) {
+        local expr: -> Expr = parseStatement();
+        if (!expr) {
+            break;
+        }
+        genReleaseReg(loadExpr(expr));
+    }
+    if (token.kind != EOI) {
         printf("syntax error\n");
     }
+    genHalt(3);
+    printf("\t.align 8\n");
+    printf("x .quad 8\n");
+    printf("\t.align 8\n");
+    printf("y .quad 8\n");
+    printf("\t.align 8\n");
+    printf("z .quad 8\n");
 }

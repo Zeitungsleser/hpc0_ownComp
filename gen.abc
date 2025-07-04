@@ -6,7 +6,7 @@ global usedReg: array[16] of bool;
 
 fn getReg(): GenReg
 {
-    for (local r: GenReg = 1; r < sizeof(usedReg)/sizeof(usedReg[0]); ++r){
+    for (local r: GenReg = 3; r < sizeof(usedReg)/sizeof(usedReg[0]); ++r){
         if (!usedReg[r]) {
             usedReg[r] = true;
             return r;
@@ -51,4 +51,23 @@ fn genInstr(instr: GenInstr, left: GenReg, right: GenReg): GenReg
 fn genHalt(exitCode: GenReg)
 {
     printf("\thalt %%%d\n", exitCode);
+}
+
+fn genLoadAddress(varName: -> char): GenReg
+{
+    local reg: GenReg = getReg();
+    printf("\tload %s, %%%d\n", varName, reg);
+    return reg;
+}
+
+fn genFetch(addr: GenReg): GenReg
+{
+    local reg: GenReg = getReg();
+    printf("\tmovq (%%%d), %%%d\n", addr, reg);
+    return reg;
+}
+
+fn genStore(val: GenReg, addr: GenReg)
+{
+    printf("\tmovq %%%d, (%%%d)\n", val, addr);
 }

@@ -5,6 +5,7 @@
 @ "gen.hdr"
 
 fn exprKindToGenInstr(kind: ExprKind): GenInstr;
+fn loadExprAddress(expr: -> Expr): GenReg;
 
 fn createBinaryExpr(kind: ExprKind, left: ->Expr, right: ->Expr): ->Expr
 {
@@ -79,8 +80,25 @@ fn printExprLatexTree(expr: -> Expr)
 fn loadExpr(expr: -> Expr): GenReg
 {
     if (expr->kind > EXPR_PRIMARY && expr->kind < EXPR_PRIMARY_END) {
-        return genConstant(expr->decimal);
+        switch (expr->kind){
+            case EXPR_INTEGER: return genConstant(expr->decimal);
+            case EXPR_IDENTIFIER:{
+                local addr: GenReg = genLoadAddress(expr->identifier);
+                genReleaseReg(addr);
+                return genFetch(addr);
+            }
+            default:
+                assert(0 && "loadExpr: no primary expression");
+                return 0;
+        }
     }else if (expr->kind > EXPR_BINARY && expr->kind < EXPR_BINARY_END) {
+        if(expr->kind == EXPR_ASSIGN){
+            local val: GenReg = loadExpr(expr->right);
+            local addr: GenReg = loadExprAddress(expr->left);
+            genReleaseReg(addr);
+            genStore(val, addr);
+            return val;
+        }
         local left: GenReg = loadExpr(expr->left);
         local right: GenReg = loadExpr(expr->right);
         genReleaseReg(left);
@@ -103,4 +121,10 @@ fn exprKindToGenInstr(kind: ExprKind): GenInstr
             assert (0 && "exprKindToGenInstr: no binary Expression");
             return 0;
     }
+}
+
+fn loadExprAddress(expr: -> Expr): GenReg
+{
+    assert(expr->kind == EXPR_IDENTIFIER);
+    return genLoadAddress(expr->identifier);
 }

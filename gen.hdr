@@ -14,3 +14,7 @@ enum GenInstr{
 extern fn genInstr(instr: GenInstr, left: GenReg, right: GenReg): GenReg;
 
 extern fn genHalt(exitCode: GenReg);
+
+extern fn genLoadAddress(varName: -> char): GenReg;
+extern fn genFetch(addr: GenReg): GenReg;
+extern fn genStore(val: GenReg, addr: GenReg);

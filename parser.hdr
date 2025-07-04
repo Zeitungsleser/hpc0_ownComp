@@ -1,3 +1,4 @@
 @ "expr.hdr"
 
 extern fn parseStatement(): -> Expr;
+extern fn parseProg(): array[10] of -> Expr;

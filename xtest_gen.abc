@@ -2,7 +2,7 @@
 
 fn main()
 {
-    local r1: GenReg = genConstant("12");
+    /*local r1: GenReg = genConstant("12");
     local r2: GenReg = genConstant("34");
     local r3: GenReg = genInstr(GEN_ADD,r1,r2);
     genReleaseReg(r3);
@@ -10,6 +10,17 @@ fn main()
     genReleaseReg(r1);
     genReleaseReg(r2);
     r1 = genConstant("42");
-    genReleaseReg(r1);
+    genReleaseReg(r1);*/  
     
+    local r1: GenReg = genLoadAddress("y");
+    genReleaseReg(r1);
+    local r2: GenReg = genFetch(r1);
+    local r3: GenReg = genConstant("1");
+    genReleaseReg(r2);
+    genReleaseReg(r3);
+    local r4: GenReg = genInstr(GEN_ADD, r2, r3);
+    local r5: GenReg = genLoadAddress("y");
+    genStore(r4, r5);
+    genHalt(r4);
+    genReleaseReg(r4);
 }

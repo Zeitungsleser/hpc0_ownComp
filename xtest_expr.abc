@@ -16,7 +16,7 @@ fn main()
                             expr);
     printExprLatexTree(expr);
     printf("\n");
-    //genReleaseReg(loadExpr(expr));
+    genReleaseReg(loadExpr(expr));
 
     releaseExpr(expr);
 }
