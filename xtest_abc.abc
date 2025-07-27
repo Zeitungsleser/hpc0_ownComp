@@ -1,6 +1,7 @@
 @ <stdio.hdr>
 @ "parser.hdr"
 @ "lexer.hdr"
+@ "genvar.hdr"
 
 fn main()
 {
@@ -13,13 +14,8 @@ fn main()
         genReleaseReg(loadExpr(expr));
     }
     if (token.kind != EOI) {
-        printf("syntax error\n");
+        printf("%u.%u: syntax error\n", token.pos.row, token.pos.col);
     }
     genHalt(3);
-    printf("\t.align 8\n");
-    printf("x .quad 8\n");
-    printf("\t.align 8\n");
-    printf("y .quad 8\n");
-    printf("\t.align 8\n");
-    printf("z .quad 8\n");
+    genPrintSymtab();
 }

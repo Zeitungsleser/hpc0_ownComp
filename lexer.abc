@@ -1,9 +1,12 @@
 @ <stdio.hdr>
 @ "lexer.hdr"
+@ "string.hdr"
+@ "ustr.hdr"
 // -- internal: only available within this translation unit
 global ch: int;
 global currentPos: Pos = {1,0};
 global lengthVal: size_t;
+global val: string;
 
 fn isDigit(ch: int): bool
 {
@@ -18,9 +21,9 @@ fn isLetter(ch: int): bool
 fn nextCh(updateVal: bool)
 {
     if (updateVal) {
-        assert(lengthVal < sizeof(token.val) / sizeof(token.val[0]) - 1);
-        token.val[lengthVal++] = ch;
-        token.val[lengthVal] = 0;
+        assert(lengthVal < sizeof(val) / sizeof(val[0]) - 1);
+        val[lengthVal++] = ch;
+        val[lengthVal] = 0;
     } else {
         lengthVal = 0;
     }
@@ -35,7 +38,7 @@ fn nextCh(updateVal: bool)
 
 // -- exported: available for other translation units
 global token: Token;
-fn getToken(): TokenKind
+fn getToken_(): TokenKind
 {
     lengthVal = 0;
     while (ch == 0 || ch == ' ' || ch == '\n' || ch == '\t') {
@@ -78,10 +81,20 @@ fn getToken(): TokenKind
     } else if (ch == '=') {
         nextCh(true);
         return token.kind = EQUAL;
+    } else if (ch == '&') {
+        nextCh(true);
+        return token.kind = AMPERSAND;
     } else {
         nextCh(true);
         return token.kind = BAD_TOKEN;
     }
+}
+
+fn getToken(): TokenKind
+{
+    getToken_();
+    token.val = UStrCreate(val);
+    return token.kind;
 }
 
 fn tokenKindStr(token: TokenKind): -> char
@@ -123,6 +136,9 @@ fn tokenKindStr(token: TokenKind): -> char
             break;
         case EQUAL:
             str = "EQUAL";
+            break;        
+        case AMPERSAND:
+            str = "AMPERSAND";
             break;
         default:
             str = "??";

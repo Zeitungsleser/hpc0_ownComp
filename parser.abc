@@ -6,6 +6,7 @@ fn parseStatement(): -> Expr;
 fn parseExpr(): -> Expr;
 fn parseAdditive(): -> Expr;
 fn parseTerm(): -> Expr;
+fn parseUnary(): ->Expr;
 fn parseFactor(): -> Expr;
 fn getExprKindFromToken(: Token): ExprKind;
 
@@ -84,14 +85,14 @@ fn parseAdditive(): -> Expr
 
 fn parseTerm(): -> Expr
 {
-    local left: -> Expr = parseFactor();
+    local left: -> Expr = parseUnary();
     if (!left) {
         return nullptr;
     }
     while (token.kind == ASTERISK || token.kind == SLASH) {
         local symbol: ExprKind = getExprKindFromToken(token);
         getToken();
-        local right: -> Expr = parseFactor();
+        local right: -> Expr = parseUnary();
         if (!right) {
             printf("%u.%u expected term\n",
                    token.pos.row, token.pos.col);
@@ -100,6 +101,29 @@ fn parseTerm(): -> Expr
         left = createBinaryExpr(symbol, left, right);
     }
     return left;
+}
+
+fn parseUnary(): -> Expr
+{
+    if (token.kind == ASTERISK || token.kind == AMPERSAND){
+        local symbol: TokenKind = token.kind;
+        getToken();
+        local child: -> Expr = parseUnary();
+        switch (symbol){
+            case ASTERISK: return createUnaryExpr(EXPR_DEREF, child);
+            case AMPERSAND:{
+                if (!addressableExpr(child)){
+                    printf("%u.%u: expression has no address\n",
+                        token.pos.row, token.pos.col);
+                    return nullptr;
+                }
+                return createUnaryExpr(EXPR_ADDR, child);
+            } 
+            default: return nullptr;
+        }
+    } else {
+        return parseFactor();
+    }
 }
 
 fn parseFactor(): -> Expr

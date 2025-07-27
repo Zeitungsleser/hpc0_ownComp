@@ -1,7 +1,7 @@
 @ <stdio.hdr>
 @ <stdlib.hdr>
 @ "expr.hdr"
-@ "string.hdr"
+@ "ustr.hdr"
 @ "gen.hdr"
 
 fn exprKindToGenInstr(kind: ExprKind): GenInstr;
@@ -9,6 +9,9 @@ fn loadExprAddress(expr: -> Expr): GenReg;
 
 fn createBinaryExpr(kind: ExprKind, left: ->Expr, right: ->Expr): ->Expr
 {
+    if (kind < EXPR_BINARY || kind > EXPR_BINARY_END){
+        assert (0 && "exprKindToGenInstr: no binary Expression");
+    }
     local n: ->Expr = malloc(sizeof(*n));
     assert(n);
     n->kind = kind;
@@ -17,7 +20,19 @@ fn createBinaryExpr(kind: ExprKind, left: ->Expr, right: ->Expr): ->Expr
     return n;
 }
 
-fn createIntegerExpr(val: string): ->Expr
+fn createUnaryExpr(kind: ExprKind, child: ->Expr): -> Expr
+{
+    if (kind < EXPR_UNARY || kind > EXPR_UNARY_END){
+        assert (0 && "exprKindToGenInstr: no unary Expression");
+    }
+    local n: -> Expr = malloc(sizeof(*n));
+    assert(n);
+    n->kind = kind;
+    n->child = child;
+    return n;
+}
+
+fn createIntegerExpr(val: -> UStr): ->Expr
 {
     local n: ->Expr = malloc(sizeof(*n));
     assert(n);
@@ -26,7 +41,7 @@ fn createIntegerExpr(val: string): ->Expr
     return n;
 }
 
-fn createIdentifierExpr(name: string): ->Expr
+fn createIdentifierExpr(name: -> UStr): ->Expr
 {
     local n: -> Expr = malloc(sizeof(*n));
     assert(n);
@@ -67,6 +82,15 @@ fn printExprTree(expr: -> Expr)
         printExprTree(expr->left);
         printExprTree(expr->right);
         printf(" ] ");
+    }else if (expr->kind > EXPR_UNARY && expr->kind < EXPR_UNARY_END){
+        printf(" [ ");
+        switch (expr->kind) {
+            case EXPR_ADDR: printf("\\&"); break;
+            case EXPR_DEREF: printf("*"); break;
+            default: assert(0);
+        }
+        printExprTree(expr->child);
+        printf(" ] ");
     }
 }
 
@@ -104,6 +128,16 @@ fn loadExpr(expr: -> Expr): GenReg
         genReleaseReg(left);
         genReleaseReg(right);
         return genInstr(exprKindToGenInstr(expr->kind), left, right);
+    }else if (expr->kind > EXPR_UNARY && expr->kind < EXPR_UNARY_END){
+        switch(expr->kind){
+            case EXPR_ADDR: return loadExprAddress(expr->child);
+            case EXPR_DEREF:{
+                local addr: GenReg = loadExpr(expr->child);
+                genReleaseReg(addr);
+                return genFetch(addr);
+            }
+            default: assert(0); return 0;
+        }
     }
     assert(0 && "loadExpr: not all cases handled!");
     return genConstant("0");
@@ -125,6 +159,19 @@ fn exprKindToGenInstr(kind: ExprKind): GenInstr
 
 fn loadExprAddress(expr: -> Expr): GenReg
 {
-    assert(expr->kind == EXPR_IDENTIFIER);
-    return genLoadAddress(expr->identifier);
+    switch(expr->kind){
+        case EXPR_IDENTIFIER: return genLoadAddress(expr->identifier);
+        case EXPR_DEREF:      return loadExpr(expr->child);
+        default:              
+            assert(0 && "loadExprAddress: Expr has no Address");
+            return 0;
+    }
+}
+
+fn addressableExpr(expr: -> Expr): bool
+{
+    if(expr->kind == EXPR_IDENTIFIER || expr->kind == EXPR_DEREF){
+        return true;
+    }
+    return false;
 }

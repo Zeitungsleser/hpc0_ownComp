@@ -1,6 +1,7 @@
 @ <stdio.hdr>
 
 @ "gen.hdr"
+@ "genvar.hdr"
 
 global usedReg: array[16] of bool;
 
@@ -22,7 +23,7 @@ fn genReleaseReg(reg:GenReg)
     usedReg[reg] = false;
 }
 
-fn genConstant(val: -> char): GenReg
+fn genConstant(val: -> UStr): GenReg
 {
     local reg: GenReg = getReg();
     printf("\tload %s, %%%d\n", val, reg);
@@ -53,8 +54,9 @@ fn genHalt(exitCode: GenReg)
     printf("\thalt %%%d\n", exitCode);
 }
 
-fn genLoadAddress(varName: -> char): GenReg
+fn genLoadAddress(varName: -> UStr): GenReg
 {
+    genAddGlobalVar(varName);
     local reg: GenReg = getReg();
     printf("\tload %s, %%%d\n", varName, reg);
     return reg;
