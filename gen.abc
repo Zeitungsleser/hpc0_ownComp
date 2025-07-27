@@ -7,7 +7,7 @@ global usedReg: array[16] of bool;
 
 fn getReg(): GenReg
 {
-    for (local r: GenReg = 3; r < sizeof(usedReg)/sizeof(usedReg[0]); ++r){
+    for (local r: GenReg = 4; r < sizeof(usedReg)/sizeof(usedReg[0]); ++r){
         if (!usedReg[r]) {
             usedReg[r] = true;
             return r;
@@ -72,4 +72,31 @@ fn genFetch(addr: GenReg): GenReg
 fn genStore(val: GenReg, addr: GenReg)
 {
     printf("\tmovq %%%d, (%%%d)\n", val, addr);
+}
+
+//-- handle functions
+
+fn genInit() {
+    printf("\t.equ SP, 1\n\t.equ FP, 2\n\t.equ retval, 16\n\t.text\n\tload 0, %%SP\n");
+    genPrepareFunctionCall(0);
+    genExecuteFunctionCall(UStrCreate("main"), 0);
+    printf("\thalt %%4\n");
+}
+
+fn genBeginFunctionDefinition(name: -> UStr) {
+    printf("%s:\n\tmovq    %%3,          (%%SP)\n\tmovq    %%FP,         8(%%SP)\n\tmovq    %%SP,         %%FP\n\t// begin function body\n", name);
+}
+
+fn genEndFunctionDefinition() {
+    printf("\t// store return value\n\tmovq    %%3,          retval(%%FP)\n\t// end function body\n\tmovq    %%FP,         %%SP\n\tmovq    8(%%SP),      %%FP\n\tmovq    (%%SP),       %%3\n\tret     %%3\n");
+}
+
+fn genPrepareFunctionCall(numArgs: int) {
+    printf("\tsub     8*(3 + %d),   %%SP,         %%SP\n", numArgs);
+}
+
+fn genExecuteFunctionCall(name: -> UStr, numArgs: int): GenReg {
+    local reg: GenReg = getReg();
+    printf("\tcall    %s,          %%3\n\tmovq    retval(%%SP),  %%%d\n\tadd     8*(3 + %d),    %%SP,          %%SP\n", name, reg, numArgs);
+    return reg;
 }
