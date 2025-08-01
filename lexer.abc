@@ -1,6 +1,7 @@
 @ <stdio.hdr>
 @ "lexer.hdr"
 @ "string.hdr"
+@ <string.hdr>
 @ "ustr.hdr"
 // -- internal: only available within this translation unit
 global ch: int;
@@ -83,7 +84,13 @@ fn getToken_(): TokenKind
         return token.kind = EQUAL;
     } else if (ch == '&') {
         nextCh(true);
-        return token.kind = AMPERSAND;
+        return token.kind = AMPERSAND;    
+    } else if (ch == '{') {
+        nextCh(true);
+        return token.kind = LBRACE;    
+    } else if (ch == '}') {
+        nextCh(true);
+        return token.kind = RBRACE;
     } else {
         nextCh(true);
         return token.kind = BAD_TOKEN;
@@ -94,6 +101,17 @@ fn getToken(): TokenKind
 {
     getToken_();
     token.val = UStrCreate(val);
+    if (token.kind == IDENTIFIER){
+        if (!strcmp(token.val, "fn")){
+            return token.kind = FN;
+        }else if (!strcmp(token.val, "while")){
+            return token.kind = WHILE;
+        }else if (!strcmp(token.val, "if")){
+            return token.kind = IF;
+        }else if (!strcmp(token.val, "else")){
+            return token.kind = ELSE;
+        }
+    }
     return token.kind;
 }
 
@@ -139,6 +157,24 @@ fn tokenKindStr(token: TokenKind): -> char
             break;        
         case AMPERSAND:
             str = "AMPERSAND";
+            break;        
+        case LBRACE:
+            str = "LBRACE";
+            break;        
+        case RBRACE:
+            str = "RBRACE";
+            break;        
+        case FN:
+            str = "FN";
+            break;        
+        case WHILE:
+            str = "WHILE";
+            break;        
+        case IF:
+            str = "IF";
+            break;        
+        case ELSE:
+            str = "ELSE";
             break;
         default:
             str = "??";

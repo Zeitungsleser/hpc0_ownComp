@@ -5,17 +5,12 @@
 
 fn main()
 {
+    genInit();
     getToken();
-    while(true) {
-        local expr: -> Expr = parseStatement();
-        if (!expr) {
-            break;
-        }
-        genReleaseReg(loadExpr(expr));
+    while(parseFunction()) {
     }
     if (token.kind != EOI) {
         printf("%u.%u: syntax error\n", token.pos.row, token.pos.col);
     }
-    genHalt(3);
     genPrintSymtab();
 }

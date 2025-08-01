@@ -13,7 +13,7 @@ fn createBinaryExpr(kind: ExprKind, left: ->Expr, right: ->Expr): ->Expr
         assert (0 && "exprKindToGenInstr: no binary Expression");
     }
     local n: ->Expr = malloc(sizeof(*n));
-    assert(n);
+    assert(n && "createBinaryExpr: out of memory");
     n->kind = kind;
     n->left = left;
     n->right = right;
@@ -26,7 +26,7 @@ fn createUnaryExpr(kind: ExprKind, child: ->Expr): -> Expr
         assert (0 && "exprKindToGenInstr: no unary Expression");
     }
     local n: -> Expr = malloc(sizeof(*n));
-    assert(n);
+    assert(n && "createUnaryExpr: out of memory");
     n->kind = kind;
     n->child = child;
     return n;
@@ -35,7 +35,7 @@ fn createUnaryExpr(kind: ExprKind, child: ->Expr): -> Expr
 fn createIntegerExpr(val: -> UStr): ->Expr
 {
     local n: ->Expr = malloc(sizeof(*n));
-    assert(n);
+    assert(n && "createIntegerExpr: out of memory");
     n->kind = EXPR_INTEGER;
     n->decimal = val;
     return n;
@@ -44,8 +44,17 @@ fn createIntegerExpr(val: -> UStr): ->Expr
 fn createIdentifierExpr(name: -> UStr): ->Expr
 {
     local n: -> Expr = malloc(sizeof(*n));
-    assert(n);
+    assert(n && "createIdentifierExpr: out of memory");
     n->kind = EXPR_IDENTIFIER;
+    n->identifier = name;
+    return n;
+}
+
+fn createCallExpr(name: -> UStr): ->Expr
+{
+    local n: -> Expr = malloc(sizeof(*n));
+    assert(n && "createCallExpr: out of memory");
+    n->kind = EXPR_CALL;
     n->identifier = name;
     return n;
 }
@@ -57,6 +66,9 @@ fn releaseExpr(expr: ->Expr)
     }else if (expr->kind > EXPR_BINARY && expr->kind < EXPR_BINARY_END) {
         releaseExpr(expr->left);
         releaseExpr(expr->right);
+        free(expr);
+    }else if (expr->kind > EXPR_UNARY && expr->kind < EXPR_UNARY_END) {
+        releaseExpr(expr->child);
         free(expr);
     }
 }
@@ -91,6 +103,8 @@ fn printExprTree(expr: -> Expr)
         }
         printExprTree(expr->child);
         printf(" ] ");
+    }else if (expr->kind == EXPR_CALL){
+        printf(" [ %s() ]", expr->identifier);
     }
 }
 
@@ -138,6 +152,9 @@ fn loadExpr(expr: -> Expr): GenReg
             }
             default: assert(0); return 0;
         }
+    }else if (expr->kind == EXPR_CALL){
+        genPrepareFunctionCall(0);
+        return genExecuteFunctionCall(expr->identifier, 0);
     }
     assert(0 && "loadExpr: not all cases handled!");
     return genConstant("0");

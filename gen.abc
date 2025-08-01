@@ -7,7 +7,7 @@ global usedReg: array[16] of bool;
 
 fn getReg(): GenReg
 {
-    for (local r: GenReg = 4; r < sizeof(usedReg)/sizeof(usedReg[0]); ++r){
+    for (local r: GenReg = 3; r < sizeof(usedReg)/sizeof(usedReg[0]); ++r){
         if (!usedReg[r]) {
             usedReg[r] = true;
             return r;
@@ -79,8 +79,19 @@ fn genStore(val: GenReg, addr: GenReg)
 fn genInit() {
     printf("\t.equ SP, 1\n\t.equ FP, 2\n\t.equ retval, 16\n\t.text\n\tload 0, %%SP\n");
     genPrepareFunctionCall(0);
-    genExecuteFunctionCall(UStrCreate("main"), 0);
-    printf("\thalt %%4\n");
+    local reg: GenReg = genExecuteFunctionCall(UStrCreate("main"), 0);
+    printf("\thalt %%%d\n", reg);
+    genReleaseReg(reg);
+    
+    genBeginFunctionDefinition("getchar");
+    printf("\tgetc    %%3\n");
+    genEndFunctionDefinition();
+    
+    genBeginFunctionDefinition("putchar");
+    printf("\tload    PUTCHAR,    %%3\n\tmovq    (%%3),    %%3\n\tputc    %%3\n");
+    genEndFunctionDefinition();
+    
+    genAddGlobalVar(UStrCreate("PUTCHAR"));
 }
 
 fn genBeginFunctionDefinition(name: -> UStr) {

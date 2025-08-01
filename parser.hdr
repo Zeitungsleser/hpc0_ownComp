@@ -2,3 +2,4 @@
 
 extern fn parseStatement(): -> Expr;
 extern fn parseProg(): array[10] of -> Expr;
+extern fn parseFunction(): bool;

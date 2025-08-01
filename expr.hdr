@@ -20,6 +20,8 @@ enum ExprKind
     EXPR_INTEGER,
     EXPR_IDENTIFIER,
     EXPR_PRIMARY_END,
+    
+    EXPR_CALL,
 };
 
 struct Expr
@@ -36,6 +38,7 @@ extern fn createBinaryExpr(kind: ExprKind, left: ->Expr, right: ->Expr): ->Expr;
 extern fn createIntegerExpr(val: -> UStr): ->Expr;
 extern fn createIdentifierExpr(name: -> UStr): -> Expr;
 extern fn createUnaryExpr(kind: ExprKind, child: -> Expr): -> Expr;
+extern fn createCallExpr(name: -> UStr): -> Expr;
 
 //destructor
 extern fn releaseExpr(expr: ->Expr);

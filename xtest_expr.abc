@@ -10,7 +10,7 @@ fn main()
                             createBinaryExpr(EXPR_DIV,
                                              createIntegerExpr(UStrCreate("2")),
                                              createIntegerExpr(UStrCreate("3"))),
-                            createIntegerExpr(UStrCreate("4")));
+                            createCallExpr(UStrCreate("f")));
     expr = createBinaryExpr(EXPR_ASSIGN,
                     createUnaryExpr(EXPR_DEREF,
                         createUnaryExpr(EXPR_ADDR,    
